@@ -33,7 +33,6 @@ data = {
     "Product": ["Card"],
     "Activity": ['Payment']
 }
-
 def recipe(model):
     product_list = {}
     raw_text = st.text_area("Type Here")
@@ -50,7 +49,7 @@ def recipe(model):
 
 
 def NER():
-    domain = st.selectbox('domain', ['recipe', 'Banking'])
+    domain = st.selectbox('domain', ['recipe', 'Banking', 'Finance', 'Medical'])
     product_list = {}
     if domain == "recipe":
         raw_text = st.text_area("Type Here")
@@ -75,11 +74,12 @@ def NER():
                          config={"data": product_list, "ent_score": True})
             doc = nlp(raw_text)
             sst.visualize_ner(doc, show_table=False, )
-    elif domain == "Banking":
+    elif domain == "Finance":
         raw_text = st.text_area("Type Here")
-        product_list['activity'] = (st.multiselect("activity", ["Payment"]))
-        product_list['product'] = st.multiselect("product", ["Card"])
+        product_list['Quantity'] = (st.multiselect("Qunatity", ["100 pounds", "50 kgs"]))
+        product_list['Cardinal'] = st.multiselect("Cardinal", ["100"])
         product_list['Money'] = st.multiselect("Money", ["dollars", "euros", "100 dollars", "100$"])
+        product_list['GPE'] = st.multiselect("GPE", ["Paris"])
         print(product_list)
         if st.button('predict'):
             nlp = spacy.load('en_core_web_lg', disable=["ner"])
@@ -87,7 +87,17 @@ def NER():
                          config={"data": product_list, "ent_score": True})
             doc = nlp(raw_text)
             sst.visualize_ner(doc, show_table=False)
-
+    elif domain == "Medical":
+        raw_text = st.text_area("Type Here")
+        product_list['Entities'] = (st.multiselect("Qunatity", ["individual physician","health care professional","hospital","provider-sponsored organization","health maintenance organizations"]))
+        product_list['Specialization'] = st.multiselect("Specialization", ["ENT","Optician","General Physician"])
+        print(product_list)
+        if st.button('predict'):
+            nlp = spacy.load('en_core_web_lg', disable=["ner"])
+            nlp.add_pipe("concise_concepts",
+                         config={"data": product_list, "ent_score": True})
+            doc = nlp(raw_text)
+            sst.visualize_ner(doc, show_table=False)
 
 def Non_NER():
     raw_text = st.text_area("Type Here")
