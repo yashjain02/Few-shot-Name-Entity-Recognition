@@ -99,7 +99,7 @@ class ConceptualSpacy:
             for word in self.data[key]:
                 if word != key:
                     default_pattern = {
-                        "lemma": {"regex": r"(?i)"+word}, 'POS': {'NOT_IN': ['VERB']},'POS':{'NOT_IN':['ADVERB']}}
+                        "lemma": {"regex": r"(?i)"+word}, 'POS': {'NOT_IN': ['VERB']}}
 
                     patterns.append(
                         {
