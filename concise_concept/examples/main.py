@@ -7,10 +7,22 @@ from sumy.nlp.tokenizers import Tokenizer
 from sumy.summarizers.lex_rank import LexRankSummarizer
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
+import re
+import spacy
+import fitz
 
+CURRENT_THEME = "blue"
+IS_DARK_THEME = True
+THEMES = [
+    "light",
+    "dark",
+    "green",
+    "blue",
+]
+HTML_WRAPPER = """<div style="overflow-x":auto;border:1px solid #e6e9ef;border-radius:0.25rem;padding: 1rem">{}</div>"""
 
 def NER():
-    domain = st.selectbox('domain', ['recipe', 'Banking', 'Finance', 'Medical'])
+    domain = st.selectbox('Domain', ['recipe', 'Banking', 'Finance', 'Medical'])
     product_list = {}
     if domain == "recipe":
         raw_text = st.text_area("Type Here")
@@ -34,6 +46,26 @@ def NER():
             nlp.add_pipe("concise_concepts",
                          config={"data": product_list, "ent_score": True})
             doc = nlp(raw_text)
+            sst.visualize_ner(doc, show_table=False)
+    elif domain == "Finance":
+        raw_text = st.text_area("Type Here")
+        product_list['Cardinal'] = st.multiselect("Cardinal", ["100"])
+        product_list['Money'] = st.multiselect("Money", ["dollars", "euros", "100", "$"])
+        product_list['GPE'] = st.multiselect("GPE", ["Paris", "Germany", "India"])
+        print(product_list)
+        if st.button('predict'):
+            nlp = spacy.load('en_core_web_lg')
+            nlp.add_pipe("concise_concepts",
+                         config={"data": product_list, "ent_score": True})
+            doc = nlp(raw_text)
+            sst.visualize_ner(doc, show_table=False)
+    elif domain == "Medical":
+        raw_text = st.text_area("Type Here")
+        product_list['Entities'] = (st.multiselect("Entity",
+                                                   ["physician", "healthcare", "professional", "hospital",
+                                                    "organization"]))
+        product_list['Specialization'] = st.multiselect("Specialization", ["ENT", "Optician", "Physician"])
+        print(product_list)
         if st.button('predict'):
             nlp = spacy.load('en_core_web_lg', disable=["ner"])
             nlp.add_pipe("concise_concepts",
@@ -41,16 +73,21 @@ def NER():
             doc = nlp(raw_text)
             sst.visualize_ner(doc, show_table=False)
 
+
 def Non_NER():
+    st.title('Entity Recognition')
     raw_text = st.text_area("Type Here")
     model = st.selectbox('Choose the model', ['en_core_web_lg', 'en_core_web_md'])
-    nlp = spacy.load(model)
-    doc = nlp(raw_text)
-    sst.visualize_ner(doc, show_table=False)
+    if st.button('Predict'):
+        nlp = spacy.load(model)
+        doc = nlp(raw_text)
+        sst.visualize_ner(doc, show_table=False)
 
 
 def Text_summary():
-    nlp=spacy.load("en_core_web_lg")
+    st.title('Text Summary and Entity Recognition using URL')
+    nlp = spacy.load("en_core_web_lg")
+
     def sumy_summarizer(docx):
         parser = PlaintextParser.from_string(docx, Tokenizer("english"))
         lex_summarizer = LexRankSummarizer()
@@ -70,15 +107,9 @@ def Text_summary():
         return fetched_text
 
     st.subheader = "Analyze text from url"
-    raw_url = st.text_input("enter URL")
+    raw_url = st.text_input("Enter URL")
     agree = st.checkbox('Paragraph filter')
     if agree:
-        if st.button("Extract"):
-            if raw_url != "Type here":
-                result = get_text(raw_url)
-                doc = nlp(result)
-                sst.visualize_ner(doc, show_table=False)
-    else:
         text_length = st.slider("Length to preview,50,100")
         if st.button("Extract"):
 
@@ -94,10 +125,18 @@ def Text_summary():
                 html = displacy.render(summary_docx, style='ent')
                 html = html.replace("\n\n", "\n")
                 st.markdown(html, unsafe_allow_html=True)
-def CV():
+    else:
+        if st.button("Extract"):
+            if raw_url != "Type here":
+                result = get_text(raw_url)
+                doc = nlp(result)
+                sst.visualize_ner(doc, show_table=False)
 
-    upload_file = st.file_uploader('Choose your CV',type="pdf")
-    text = " "
+
+def CV():
+    st.title('CV Entity Recognition')
+    upload_file = st.file_uploader('Choose your CV', type="pdf")
+
     def convertToText(fname):
         doc = fitz.open(fname)
         text = ""
@@ -106,41 +145,58 @@ def CV():
         tx = " ".join(text.split("\n"))
         return tx
 
-    nlp = spacy.load("en_core_web_lg")
-    tx = convertToText(upload_file)
-    skills = "skill_patterns.jsonl"
-    ruler = nlp.add_pipe("entity_ruler",before="ner")
-    ruler.from_disk(skills)
-    pattern = [{
-        "label":"EMAIL","pattern":[{"text":{"REGEX":"([^@\s]+@[^@]+\.[^@|\s]+)"}}]
-    },
-        {
-            "label": "Mobile", "pattern": [{"TEXT": {"REGEX": "\d{3}[-\.\s]??\d{3}[-\.\s]??\d{4}|\(\d{3}\)\s*\d{3}[-\.\s]??\d{4}|\d{3}[-\.\s]??\d{4}"}}]
-        }]
-    ruler.add_patterns(pattern)
-    doc1 = nlp(tx)
-    sst.visualize_ner(doc1,show_table=False)
+    if st.button('Predict'):
+        nlp = spacy.load("en_core_web_lg")
+        tx = convertToText(upload_file)
+        skills = "skill_patterns.jsonl"
+        ruler = nlp.add_pipe("entity_ruler", before="ner")
+        ruler.from_disk(skills)
+        pattern = [{
+            "label": "EMAIL", "pattern": [{"text": {"REGEX": "([^@\s]+@[^@]+\.[^@|\s]+)"}}]
+        },
+            {
+                "label": "Mobile", "pattern": [{"TEXT": {
+                "REGEX": "\d{3}[-\.\s]??\d{3}[-\.\s]??\d{4}|\(\d{3}\)\s*\d{3}[-\.\s]??\d{4}|\d{3}[-\.\s]??\d{4}"}}]
+            }]
+        ruler.add_patterns(pattern)
+        doc1 = nlp(tx)
+        sst.visualize_ner(doc1, show_table=False)
 
 
 def Home():
-    st.title("the vectors")
+    cols = st.columns(len(THEMES))
+    for col, theme in zip(cols, THEMES):
+
+        # Get repo name for this theme (to link to correct deployed app)-
+        if theme == "light":
+            repo = "theming-showcase"
+        else:
+            repo = f"theming-showcase-{theme}"
+        # Set border of current theme to red, otherwise black or white
+        if theme == CURRENT_THEME:
+            border_color = "red"
+        else:
+            border_color = "lightgrey" if IS_DARK_THEME else "black"
+        if theme in ["light", "dark"]:
+            theme_descriptor = theme.capitalize() + " theme"
+        else:
+            theme_descriptor = "Custom theme"
+        col.write(f"<p align=center>{theme_descriptor}</p>", unsafe_allow_html=True)
 
 
 def main():
-    st.title('spacy-streamlit')
-    menu = ['Home', 'NER', 'No-Class NER', 'Entity in URL',"CV"]
+    menu = ['Home', 'NER', 'No-Class NER', 'Text Summary', "CV"]
     choice = st.sidebar.selectbox("Menu", menu)
     if choice == "NER":
         NER()
-    elif choice == "NER without entity":
+    elif choice == "No-Class NER":
         Non_NER()
     elif choice == "CV":
         CV()
-    elif choice == "Text_summary":
+    elif choice == "Text Summary":
         Text_summary()
     else:
         Home()
-
 
 
 if __name__ == "__main__":
