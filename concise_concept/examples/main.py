@@ -9,11 +9,25 @@ from bs4 import BeautifulSoup
 from urllib.request import urlopen
 import re
 import spacy
+<<<<<<< HEAD
 import  fitz
 import nltk
 HTML_WRAPPER = """<div style="overflow-x":auto;border:1px solid #e6e9ef;border-radius:0.25rem;padding: 1rem">{}</div>"""
 #nltk.download()
 
+=======
+import fitz
+
+CURRENT_THEME = "blue"
+IS_DARK_THEME = True
+THEMES = [
+    "light",
+    "dark",
+    "green",
+    "blue",
+]
+HTML_WRAPPER = """<div style="overflow-x":auto;border:1px solid #e6e9ef;border-radius:0.25rem;padding: 1rem">{}</div>"""
+>>>>>>> yash
 
 def NER():
     domain = st.selectbox('Domain', ['recipe', 'Banking', 'Finance', 'Medical'])
@@ -44,8 +58,13 @@ def NER():
     elif domain == "Finance":
         raw_text = st.text_area("Type Here")
         product_list['Cardinal'] = st.multiselect("Cardinal", ["100"])
+<<<<<<< HEAD
         product_list['Money'] = st.multiselect("Money",  ["dollars", "euros", "100", "$"])
         product_list['GPE'] = st.multiselect("GPE", ["Paris","Germany","India"])
+=======
+        product_list['Money'] = st.multiselect("Money", ["dollars", "euros", "100", "$"])
+        product_list['GPE'] = st.multiselect("GPE", ["Paris", "Germany", "India"])
+>>>>>>> yash
         print(product_list)
         if st.button('predict'):
             nlp = spacy.load('en_core_web_lg')
@@ -58,7 +77,11 @@ def NER():
         product_list['Entities'] = (st.multiselect("Entity",
                                                    ["physician", "healthcare", "professional", "hospital",
                                                     "organization"]))
+<<<<<<< HEAD
         product_list['Specialization'] = st.multiselect("Specialization", ["ENT","Optician","Physician"])
+=======
+        product_list['Specialization'] = st.multiselect("Specialization", ["ENT", "Optician", "Physician"])
+>>>>>>> yash
         print(product_list)
         if st.button('predict'):
             nlp = spacy.load('en_core_web_lg', disable=["ner"])
@@ -80,7 +103,12 @@ def Non_NER():
 
 def Text_summary():
     st.title('Text Summary and Entity Recognition using URL')
+<<<<<<< HEAD
     nlp=spacy.load("en_core_web_lg")
+=======
+    nlp = spacy.load("en_core_web_lg")
+
+>>>>>>> yash
     def sumy_summarizer(docx):
         parser = PlaintextParser.from_string(docx, Tokenizer("english"))
         lex_summarizer = LexRankSummarizer()
@@ -125,9 +153,16 @@ def Text_summary():
                 doc = nlp(result)
                 sst.visualize_ner(doc, show_table=False)
 
+<<<<<<< HEAD
 def CV():
     st.title('CV Entity Recognition')
     upload_file = st.file_uploader('Choose your CV',type="pdf")
+=======
+
+def CV():
+    st.title('CV Entity Recognition')
+    upload_file = st.file_uploader('Choose your CV', type="pdf")
+>>>>>>> yash
 
     def convertToText(fname):
         doc = fitz.open(fname)
@@ -136,10 +171,15 @@ def CV():
             text = text + str(page.get_text())
         tx = " ".join(text.split("\n"))
         return tx
+<<<<<<< HEAD
+=======
+
+>>>>>>> yash
     if st.button('Predict'):
         nlp = spacy.load("en_core_web_lg")
         tx = convertToText(upload_file)
         skills = "skill_patterns.jsonl"
+<<<<<<< HEAD
         ruler = nlp.add_pipe("entity_ruler",before="ner")
         ruler.from_disk(skills)
         pattern = [{
@@ -159,6 +199,45 @@ def Home():
 
 def main():
     menu = ['Home', 'NER', 'No-Class NER', 'Text Summary',"CV"]
+=======
+        ruler = nlp.add_pipe("entity_ruler", before="ner")
+        ruler.from_disk(skills)
+        pattern = [{
+            "label": "EMAIL", "pattern": [{"text": {"REGEX": "([^@\s]+@[^@]+\.[^@|\s]+)"}}]
+        },
+            {
+                "label": "Mobile", "pattern": [{"TEXT": {
+                "REGEX": "\d{3}[-\.\s]??\d{3}[-\.\s]??\d{4}|\(\d{3}\)\s*\d{3}[-\.\s]??\d{4}|\d{3}[-\.\s]??\d{4}"}}]
+            }]
+        ruler.add_patterns(pattern)
+        doc1 = nlp(tx)
+        sst.visualize_ner(doc1, show_table=False)
+
+
+def Home():
+    cols = st.columns(len(THEMES))
+    for col, theme in zip(cols, THEMES):
+
+        # Get repo name for this theme (to link to correct deployed app)-
+        if theme == "light":
+            repo = "theming-showcase"
+        else:
+            repo = f"theming-showcase-{theme}"
+        # Set border of current theme to red, otherwise black or white
+        if theme == CURRENT_THEME:
+            border_color = "red"
+        else:
+            border_color = "lightgrey" if IS_DARK_THEME else "black"
+        if theme in ["light", "dark"]:
+            theme_descriptor = theme.capitalize() + " theme"
+        else:
+            theme_descriptor = "Custom theme"
+        col.write(f"<p align=center>{theme_descriptor}</p>", unsafe_allow_html=True)
+
+
+def main():
+    menu = ['Home', 'NER', 'No-Class NER', 'Text Summary', "CV"]
+>>>>>>> yash
     choice = st.sidebar.selectbox("Menu", menu)
     if choice == "NER":
         NER()
@@ -170,7 +249,10 @@ def main():
         Text_summary()
     else:
         Home()
+<<<<<<< HEAD
 
+=======
+>>>>>>> yash
 
 
 if __name__ == "__main__":
