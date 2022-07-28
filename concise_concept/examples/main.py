@@ -7,12 +7,6 @@ from sumy.nlp.tokenizers import Tokenizer
 from sumy.summarizers.lex_rank import LexRankSummarizer
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
-import re
-import spacy
-import  fitz
-import nltk
-HTML_WRAPPER = """<div style="overflow-x":auto;border:1px solid #e6e9ef;border-radius:0.25rem;padding: 1rem">{}</div>"""
-nltk.download()
 
 
 def NER():
@@ -40,33 +34,12 @@ def NER():
             nlp.add_pipe("concise_concepts",
                          config={"data": product_list, "ent_score": True})
             doc = nlp(raw_text)
-            sst.visualize_ner(doc, show_table=False)
-    elif domain == "Finance":
-        raw_text = st.text_area("Type Here")
-        product_list['Cardinal'] = st.multiselect("Cardinal", ["100"])
-        product_list['Money'] = st.multiselect("Money",  ["dollars", "euros", "100", "$"])
-        product_list['GPE'] = st.multiselect("GPE", ["Paris","Germany","India"])
-        print(product_list)
-        if st.button('predict'):
-            nlp = spacy.load('en_core_web_lg')
-            nlp.add_pipe("concise_concepts",
-                         config={"data": product_list, "ent_score": True})
-            doc = nlp(raw_text)
-            sst.visualize_ner(doc, show_table=False)
-    elif domain == "Medical":
-        raw_text = st.text_area("Type Here")
-        product_list['Entities'] = (st.multiselect("Entity",
-                                                   ["physician", "healthcare", "professional", "hospital",
-                                                    "organization"]))
-        product_list['Specialization'] = st.multiselect("Specialization", ["ENT","Optician","Physician"])
-        print(product_list)
         if st.button('predict'):
             nlp = spacy.load('en_core_web_lg', disable=["ner"])
             nlp.add_pipe("concise_concepts",
                          config={"data": product_list, "ent_score": True})
             doc = nlp(raw_text)
             sst.visualize_ner(doc, show_table=False)
-
 
 def Non_NER():
     raw_text = st.text_area("Type Here")
