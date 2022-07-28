@@ -15,21 +15,6 @@ HTML_WRAPPER = """<div style="overflow-x":auto;border:1px solid #e6e9ef;border-r
 nltk.download()
 
 
-def recipe(model):
-    product_list = {}
-    raw_text = st.text_area("Type Here")
-    product_list['fruit'] = (st.multiselect("Fruit", ["apple", "pear", "orange"]))
-    product_list['vegetable'] = st.multiselect("vegetables", ["broccoli", "spinach", "tomato", "Onion", "ginger"])
-    product_list['meat'] = st.multiselect("Meat", ["chicken", "beef", "pork", "fish", "lamb"])
-    print(product_list)
-    if st.button('predict'):
-        nlp = spacy.load(model, disable=["ner"])
-        nlp.add_pipe("concise_concepts",
-                     config={"data": product_list, "topn": [100, 100, 100], "ent_score": True})
-        doc = nlp(raw_text)
-        sst.visualize_ner(doc, show_table=False, )
-
-
 def NER():
     domain = st.selectbox('domain', ['recipe', 'Banking', 'Finance', 'Medical'])
     product_list = {}
