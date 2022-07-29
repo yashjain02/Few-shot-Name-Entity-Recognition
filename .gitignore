@@ -140,6 +140,6 @@ dmypy.json
 .idea
 .slugignore
 *.psd
-*.pdf
+concise_concepts/examples/YashKumarJain_CV.pdf
 /test
 /spec
