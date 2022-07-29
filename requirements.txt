@@ -9,3 +9,4 @@ spacy==3.4.1
 spacy-streamlit==1.0.4
 streamlit==1.11.0
 sumy==0.10.0
+frontend
